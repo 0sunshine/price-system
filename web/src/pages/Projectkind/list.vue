@@ -41,7 +41,7 @@
           <el-form-item label="父项目" prop="parent_project_kind_id">
             <el-cascader v-model="form.parent_project_kind_id" :options="resList"
               :props="{ value: 'project_kind_id', label: 'project_name', children: 'children', checkStrictly: true, emitPath: false }"
-              placeholder="请选择父项目" />
+              placeholder="空项目" disabled/>
           </el-form-item>
           <el-form-item label="项目名称" prop="project_name">
             <el-input v-model="form.project_name" placeholder="请输入项目名称"></el-input>
