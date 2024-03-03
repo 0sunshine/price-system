@@ -39,9 +39,7 @@ export function queryParams(query){
           q.push(`${key}=${encodeURIComponent(query[key])}`)
       }
   }
-  let r = q.join("&")
-  r = r ? ("?"+r) : ""
-  return r
+  return q
 }
 
 // 上移

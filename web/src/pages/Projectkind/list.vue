@@ -9,31 +9,40 @@
 
         <el-button type="danger" size="small" @click="handleMultiDelete"
           v-if="searchForm.tab != 'delete'">批量删除</el-button>
-        <el-button type="warning" size="small" @click="handleRestoreGoods" v-else>恢复商品</el-button>
-
-        <el-popconfirm v-if="searchForm.tab == 'delete'" title="是否要彻底删除该商品？" confirmButtonText="确认" cancelButtonText="取消"
-          @confirm="handleDestroyGoods">
-          <template #reference>
-            <el-button type="danger" size="small">彻底删除</el-button>
-          </template>
-        </el-popconfirm>
-
       </ListHeader>
 
       <el-table ref="multipleTableRef" @selection-change="handleSelectionChange" :data="tableData" stripe
-        style="width: 100%" v-loading="loading">
+        style="width: 100%" row-key="project_kind_id" v-loading="loading" default-expand-all
+        :tree-props="{ children: 'children', hasChildren: 'hasChildren' }">
         <el-table-column type="selection" width="55" />
-        <el-table-column label="项目名称" prop="project_name" width="300" />
+        <el-table-column label="项目类型名称" prop="project_name" width="300" />
         <el-table-column label="备注" prop="notes" />
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button text type="primary" size="small" @click.stop="addChild(scope.row.project_kind_id)">增加</el-button>
+            <el-button text type="primary" size="small" @click.stop="handleEdit(scope.row)">修改</el-button>
+            <el-popconfirm title="是否要删除该商品？" confirmButtonText="确认" cancelButtonText="取消"
+              @confirm="handleDelete([scope.row.project_kind_id])">
+              <template #reference>
+                <el-button class="px-1" text type="primary" size="small">删除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
       </el-table>
 
       <div class="flex items-center justify-center mt-5">
-        <el-pagination background layout="prev, pager ,next" :total="total" :current-page="currentPage" :page-size="limit"
-          @current-change="getData" />
+        <el-pagination background layout="prev, pager ,next" :total="total" :current-page="currentPage"
+          :page-size="limit" @current-change="getData" />
       </div>
 
       <FormDrawer ref="formDrawerRef" :title="drawerTitle" @submit="handleSubmit">
         <el-form :model="form" ref="formRef" :rules="rules" label-width="80px" :inline="false">
+          <el-form-item label="父项目" prop="parent_project_kind_id">
+            <el-cascader v-model="form.parent_project_kind_id" :options="resList"
+              :props="{ value: 'project_kind_id', label: 'project_name', children: 'children', checkStrictly: true, emitPath: false }"
+              placeholder="请选择父项目" />
+          </el-form-item>
           <el-form-item label="项目名称" prop="project_name">
             <el-input v-model="form.project_name" placeholder="请输入项目名称"></el-input>
           </el-form-item>
@@ -47,23 +56,18 @@
 
   </div>
 </template>
+
 <script setup>
 import { ref } from "vue"
 import ListHeader from "~/components/ListHeader.vue";
 import FormDrawer from "~/components/FormDrawer.vue";
 
 import {
-  getGoodsList,
-  updateGoodsStatus,
-  createGoods,
-  updateGoods,
-  deleteGoods,
-  restoreGoods,
-  destroyGoods
-} from "~/api/goods"
-import {
-  getCategoryList
-} from "~/api/category"
+  getProjectKindList,
+  createProjectKind,
+  updateProjectKind,
+  deleteProjectKind,
+} from "~/api/project_kind"
 
 import { useInitTable, useInitForm } from '~/composables/useCommon.js'
 
@@ -85,7 +89,6 @@ const {
   limit,
   getData,
   handleDelete,
-  handleMultiStatusChange,
 
   multiSelectionIds
 } = useInitTable({
@@ -94,20 +97,17 @@ const {
     tab: "all",
     category_id: null,
   },
-  getList: getGoodsList,
+  getList: getProjectKindList,
   onGetListSuccess: (res) => {
-    tableData.value = res.list.map(o => {
-      o.bannersLoading = false
-      o.contentLoading = false
-      o.skusLoading = false
-      return o
-    })
+    tableData.value = res.list
+    resList.value = res.list
     total.value = res.totalCount
   },
-  delete: deleteGoods,
-  updateStatus: updateGoodsStatus
+  delete: deleteProjectKind,
+  selectionChange: (e) => e.map(o => o.project_kind_id)
 })
 
+const resList = ref([])
 const {
   formDrawerRef,
   formRef,
@@ -119,34 +119,20 @@ const {
   handleEdit
 } = useInitForm({
   form: {
-    project_kind_id: -1,
-    project_name: "", 
     parent_project_kind_id: "",
+    project_kind_id: "",
+    project_name: "",
     notes: "",
   },
   getData,
-  update: updateGoods,
-  create: createGoods
+  update: updateProjectKind,
+  create: createProjectKind
 })
 
-
-
-const handleRestoreGoods = () => useMultiAction(restoreGoods, "恢复")
-
-const handleDestroyGoods = () => useMultiAction(destroyGoods, "彻底删除")
-function useMultiAction(func, msg) {
-  loading.value = true
-  func(multiSelectionIds.value)
-    .then(res => {
-      toast(msg + "成功")
-      // 清空选中
-      if (multipleTableRef.value) {
-        multipleTableRef.value.clearSelection()
-      }
-      getData()
-    })
-    .finally(() => {
-      loading.value = false
-    })
+// 添加子分类
+const addChild = (project_kind_id) => {
+  handleCreate()
+  form.parent_project_kind_id = project_kind_id
 }
+
 </script>

@@ -1,4 +1,5 @@
 import { ref, reactive, computed } from "vue"
+import { Console } from "windicss/utils"
 import { toast } from "~/composables/util"
 // 列表，分页，搜索，删除，修改状态
 export function useInitTable(opt = {}) {
@@ -73,7 +74,13 @@ export function useInitTable(opt = {}) {
     // 多选选中ID
     const multiSelectionIds = ref([])
     const handleSelectionChange = (e) => {
-        multiSelectionIds.value = e.map(o => o.id)
+        if (opt.selectionChange) {
+            console.log(e)
+            multiSelectionIds.value = opt.selectionChange(e)
+            console.log(multiSelectionIds.value)
+        } else {
+            multiSelectionIds.value = e.map(o => o.id)
+        }
     }
     // 批量删除
     const multipleTableRef = ref(null)
@@ -153,7 +160,7 @@ export function useInitForm(opt = {}) {
                 body = form
             }
 
-            const fun = editId.value ? opt.update(editId.value, body) : opt.create(body)
+            const fun = editId.value ? opt.update(body) : opt.create(body)
 
             fun.then(res => {
                 toast(drawerTitle.value + "成功")
@@ -184,7 +191,7 @@ export function useInitForm(opt = {}) {
 
     // 编辑
     const handleEdit = (row) => {
-        editId.value = row.id
+        editId.value = 1
         resetForm(row)
         formDrawerRef.value.open()
     }
