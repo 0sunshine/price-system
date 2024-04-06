@@ -333,3 +333,102 @@ func DeleteProjectKind(req protocol.DeleteProjectKindReq) error {
 
 	return nil
 }
+
+func GetMaterialKindList(req protocol.GetMaterialKindReq) ([]protocol.MaterialKindItem, error) {
+	list := []protocol.MaterialKindItem{}
+
+	strSql := "select * from table_material_kind"
+
+	conds := []string{}
+	condsValue := []any{}
+
+	//conds = append(conds, "parent_project_kind_id=?")
+	//condsValue = append(condsValue, parentProjectKindId)
+
+	strConds := appendAndCond(conds)
+	if len(strConds) > 0 {
+		strSql += " where "
+		strSql += strConds
+		strSql += ";"
+	}
+
+	//fmt.Println(strSql)
+	rows, err := DB.Query(strSql, condsValue...)
+	if err != nil {
+		fmt.Println(err)
+		return list, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var item protocol.MaterialKindItem
+		err := rows.Scan(&item.MaterialKindId, &item.ProjectKindId,
+			&item.MaterialName, &item.Unit, &item.Notes)
+		if err != nil {
+			fmt.Println(err)
+			return []protocol.MaterialKindItem{}, err
+		}
+
+		list = append(list, item)
+	}
+
+	return list, nil
+}
+
+func AddMaterialKind(req protocol.AddMaterialKindReq) error {
+
+	var err error
+
+	_, err = DB.Exec(
+		"insert into table_material_kind(project_kind_id, material_name, unit, notes) "+
+			"values (?,?,?,?)", req.ProjectKindId, req.MaterialName, req.Unit, req.Notes)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func UpdatedMaterialKind(req protocol.UpdateMaterialKindReq) error {
+
+	var err error
+
+	_, err = DB.Exec(
+		"update table_material_kind set material_name = ?,unit=?,notes=? where material_kind_id=?",
+		req.MaterialName, req.Unit, req.Notes, req.MaterialKindId)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func DeleteMaterialKind(req protocol.DeleteMaterialKindReq) error {
+
+	var err error
+
+	tx, err := DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	for _, id := range req.MaterialKindIds {
+
+		_, err = DB.Exec(
+			"delete from table_material_kind where material_kind_id=?", id)
+
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	return nil
+}

@@ -20,5 +20,10 @@ func main() {
 	r.POST("/admin/updateProjectKind", api.UpdateProjectKind)
 	r.POST("/admin/deleteProjectKind", api.DeleteProjectKind)
 
+	r.POST("/admin/getMaterialKindList", api.GetMaterialKindList)
+	r.POST("/admin/addMaterialKind", api.AddMaterialKind)
+	r.POST("/admin/updateMaterialKind", api.UpdateMaterialKind)
+	r.POST("/admin/deleteMaterialKind", api.DeleteMaterialKind)
+
 	r.Run(":8888")
 }
