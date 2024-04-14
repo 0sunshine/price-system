@@ -432,3 +432,102 @@ func DeleteMaterialKind(req protocol.DeleteMaterialKindReq) error {
 
 	return nil
 }
+
+func GetMaterialAttrList(req protocol.GetMaterialAttrReq) ([]protocol.MaterialAttrItem, error) {
+	list := []protocol.MaterialAttrItem{}
+
+	strSql := "select a.*,b.material_name from table_material_attr a join table_material_kind b on a.material_kind_id=b.material_kind_id"
+
+	conds := []string{}
+	condsValue := []any{}
+
+	//conds = append(conds, "parent_project_kind_id=?")
+	//condsValue = append(condsValue, parentProjectKindId)
+
+	strConds := appendAndCond(conds)
+	if len(strConds) > 0 {
+		strSql += " where "
+		strSql += strConds
+		strSql += ";"
+	}
+
+	//fmt.Println(strSql)
+	rows, err := DB.Query(strSql, condsValue...)
+	if err != nil {
+		fmt.Println(err)
+		return list, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var item protocol.MaterialAttrItem
+		err := rows.Scan(&item.AttrId, &item.MaterialKindId,
+			&item.AttrDesc, &item.MaterialName)
+		if err != nil {
+			fmt.Println(err)
+			return []protocol.MaterialAttrItem{}, err
+		}
+
+		list = append(list, item)
+	}
+
+	return list, nil
+}
+
+func AddMaterialAttr(req protocol.AddMaterialAttrReq) error {
+
+	var err error
+
+	_, err = DB.Exec(
+		"insert into table_material_attr(material_kind_id, attr_desc) "+
+			"values (?,?)", req.MaterialKindId, req.AttrDesc)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func UpdatedMaterialAttr(req protocol.UpdateMaterialAttrReq) error {
+
+	var err error
+
+	_, err = DB.Exec(
+		"update table_material_attr set attr_desc = ? where attr_id=?",
+		req.AttrDesc, req.AttrId)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func DeleteMaterialAttr(req protocol.DeleteMaterialAttrReq) error {
+
+	var err error
+
+	tx, err := DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	for _, id := range req.MaterialAttrIds {
+
+		_, err = DB.Exec(
+			"delete from table_material_attr where attr_id=?", id)
+
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	return nil
+}

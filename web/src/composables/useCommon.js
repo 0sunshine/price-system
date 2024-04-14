@@ -30,7 +30,7 @@ export function useInitTable(opt = {}) {
         }
 
         loading.value = true
-        opt.getList(currentPage.value, searchForm)
+        opt.getList(currentPage.value, 10, searchForm)
             .then(res => {
                 if (opt.onGetListSuccess && typeof opt.onGetListSuccess == "function") {
                     opt.onGetListSuccess(res)

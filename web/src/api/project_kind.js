@@ -3,10 +3,10 @@ import axios from '~/axios'
 import { queryParams } from "~/composables/util"
 
 
-export function getProjectKindList(page, query = {}) {
+export function getProjectKindList(page, page_size = 10,query = {}) {
     let filter = {}
     filter = query
-    filter["page-size"] = 10
+    filter["page-size"] = page_size
     filter["current-page"] = page
 
     return axios.post(`/admin/getProjectKindList`, {
