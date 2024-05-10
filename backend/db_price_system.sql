@@ -32,8 +32,8 @@ CREATE TABLE table_material_attr (
 CREATE TABLE table_material (
 	material_id bigint not null auto_increment COMMENT '材料id',
 	material_kind_id bigint not null COMMENT '材料类型id',
-	price decimal(62,2) not null COMMENT '材料价格',
-	extra_price decimal(62,2) not null COMMENT '额外材料价格，如人工',
+	price varchar(16) not null COMMENT '材料价格',
+	extra_price varchar(16) not null COMMENT '额外材料价格，如人工',
 	
 	PRIMARY KEY (material_id) 
 ) default character set = 'utf8mb4';

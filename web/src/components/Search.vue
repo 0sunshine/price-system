@@ -29,7 +29,7 @@ defineProps({
 })
 
 defineEmits(["search","reset"])
-const showSearch = ref(false)
+const showSearch = ref(true)
 
 const slots = useSlots()
 const hasShowSearch = ref(!!slots.show)

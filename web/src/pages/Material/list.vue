@@ -2,28 +2,37 @@
   <div>
 
     <el-card shadow="never" class="border-0">
+      <!-- 搜索 -->
+      <Search :model="searchForm" @search="getData" @reset="resetSearchForm">
+        <SearchItem label="搜索材料">
+          <el-input v-model="searchForm.material_name_like" placeholder="模糊查找材料名" clearable></el-input>
+        </SearchItem>
+
+        <template #show>
+          <SearchItem label="搜索材料">
+            <el-input v-model="searchForm.material_name_like" placeholder="模糊查找材料名" clearable></el-input>
+          </SearchItem>
+        </template>
+      </Search>
 
       <!-- 新增|刷新 -->
       <ListHeader layout="create,refresh" @create="handleCreateProxy" @refresh="getData">
 
         <el-button type="danger" size="small" @click="handleMultiDelete"
           v-if="searchForm.tab != 'delete'">批量删除</el-button>
-
       </ListHeader>
 
       <el-table ref="multipleTableRef" @selection-change="handleSelectionChange" :data="tableData" stripe
-        style="width: 100%" row-key="material_kind_id" v-loading="loading" default-expand-all
+        style="width: 100%" row-key="material_id" v-loading="loading" default-expand-all
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }">
         <el-table-column type="selection" width="55" />
-        <el-table-column label="所属材料" prop="material_name" width="300" />
-        <el-table-column label="规格描述" prop="attr_desc" width="300" />
-        <el-table-column label="操作" align="center">
+        <el-table-column label="材料名称" prop="material_name" width="300" />
+        <el-table-column label="材料价格" prop="price" width="300" />
+        <el-table-column label="操作" prop="extra_price" width="300">
           <template #default="scope">
-            <el-button text type="primary" size="small"
-              @click.stop="addChild(scope.row.material_kind_id)">增加</el-button>
             <el-button text type="primary" size="small" @click.stop="handleEditProxy(scope.row)">修改</el-button>
             <el-popconfirm title="是否要删除该材料？" confirmButtonText="确认" cancelButtonText="取消"
-              @confirm="handleDelete([scope.row.material_kind_id])">
+              @confirm="handleDelete([scope.row.material_id])">
               <template #reference>
                 <el-button class="px-1" text type="primary" size="small">删除</el-button>
               </template>
@@ -42,11 +51,19 @@
           <el-form-item label="所属材料" prop="material_kind_id">
             <el-cascader v-model="form.material_kind_id" :options="MaterialKindList"
               :props="{ value: 'material_kind_id', label: 'material_name', children: 'children', checkStrictly: true, emitPath: false }"
-              placeholder="空项目" :disabled=CascaderEnableRef />
+              placeholder="空项目" @change="handleMaterialKindIdChanged" :disabled=CascaderEnableRef />
           </el-form-item>
-          <el-form-item label="规格" prop="attr_desc">
-            <el-input type="textarea" v-model="form.attr_desc" placeholder="规格描述"></el-input>
+          <el-form-item label="规格" prop="attr_descs">
+            <el-cascader v-model="MaterialAttrCascader" :options="MaterialKindAttrList"
+              :props="{ value: 'attr_id', label: 'attr_desc', checkStrictly: true, emitPath: false, multiple: true }"
+              placeholder="规格列表" @change="handleMaterialAttrChanged" :disabled=CascaderEnableRef />
           </el-form-item>
+          <el-form-item label="材料价格" prop="price">
+            <el-input v-model="form.price" placeholder="选填，备注" style="width: 180px"></el-input>
+          </el-form-item>
+          <!-- <el-form-item label="材料其他格外价格" prop="extra_price">
+            <el-input type="textarea" v-model="form.extra_price" placeholder="选填，备注"></el-input>
+          </el-form-item> -->
         </el-form>
       </FormDrawer>
 
@@ -59,6 +76,19 @@
 import { ref } from "vue"
 import ListHeader from "~/components/ListHeader.vue";
 import FormDrawer from "~/components/FormDrawer.vue";
+import Search from "~/components/Search.vue";
+import SearchItem from "~/components/SearchItem.vue";
+
+import {
+  getMaterialList,
+  createMaterial,
+  updateMaterial,
+  deleteMaterial,
+} from "~/api/material"
+
+import {
+  getMaterialKindList
+} from "~/api/material_kind"
 
 import {
   getMaterialAttrList,
@@ -66,10 +96,6 @@ import {
   updateMaterialAttr,
   deleteMaterialAttr,
 } from "~/api/material_attr"
-
-import {
-  getMaterialKindList
-} from "~/api/material_kind"
 
 import { useInitTable, useInitForm } from '~/composables/useCommon.js'
 
@@ -79,6 +105,9 @@ import {
 
 const MaterialKindList = ref([])
 const CascaderEnableRef = ref(false)
+
+const MaterialKindAttrList = ref([])
+const MaterialAttrCascader = ref([])
 
 const {
   handleSelectionChange,
@@ -98,9 +127,9 @@ const {
   multiSelectionIds
 } = useInitTable({
   searchForm: {
-    material_kind_id: -1,
+    material_name_like: "",
   },
-  getList: getMaterialAttrList,
+  getList: getMaterialList,
   onGetListSuccess: (res) => {
 
     getMaterialKindList(1, 10000).then((response) => {
@@ -111,7 +140,7 @@ const {
 
     total.value = res.totalCount
   },
-  delete: deleteMaterialAttr,
+  delete: deleteMaterial,
   selectionChange: (e) => e.map(o => o.material_kind_id)
 })
 
@@ -127,31 +156,66 @@ const {
   handleEdit
 } = useInitForm({
   form: {
-    attr_id: -1,
+    material_id: -1,
     material_kind_id: -1,
-    material_name:"",
-    attr_desc: "",
+    material_name: "",
+    price: "",
+    extra_price: "",
+    attr_descs: []
   },
   getData,
-  update: updateMaterialAttr,
-  create: createMaterialAttr
+  update: updateMaterial,
+  create: createMaterial
 })
 
-// 添加子分类
-const addChild = (project_kind_id) => {
-  handleCreate()
-  form.project_kind_id = project_kind_id
-}
 
 const handleEditProxy = (row) => {
   handleEdit(row)
   CascaderEnableRef.value = true
+
+  MaterialKindAttrList.value = []
+  handleMaterialKindIdChanged()
+
+  MaterialAttrCascader.value = []
+  for (var attr of form.attr_descs) {
+    MaterialAttrCascader.value.push(attr.attr_id);
+  }
 }
 
 const handleCreateProxy = (row) => {
   handleCreate(row)
   CascaderEnableRef.value = false
+
+  MaterialKindAttrList.value = []
+  MaterialAttrCascader.value = []
 }
 
+const handleMaterialKindIdChanged = async () => {
+
+  await getMaterialAttrList(1, 10000, { material_kind_id: form.material_kind_id}).then((response) => {
+    MaterialKindAttrList.value = response.list
+  });
+  
+  console.log(MaterialKindAttrList)
+}
+
+
+const handleMaterialAttrChanged = () => {
+
+  form.attr_descs = []
+
+  for (var attr_id of MaterialAttrCascader.value){
+    for (var itm of MaterialKindAttrList.value) {
+      if (itm.attr_id == attr_id) {
+        form.attr_descs.push({
+          attr_id: attr_id,
+          material_kind_id: form.material_kind_id,
+          material_name: form.material_name,
+          attr_desc: itm.attr_desc
+        })
+      }
+    }
+  }
+}
 
 </script>

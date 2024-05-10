@@ -8,8 +8,8 @@ import (
 	"net/http"
 )
 
-func GetMaterialAttrList(c *gin.Context) {
-	req := protocol.GetMaterialAttrReq{}
+func GetMaterialList(c *gin.Context) {
+	req := protocol.GetMaterialReq{}
 
 	err := c.ShouldBind(&req)
 	if err != nil {
@@ -21,13 +21,13 @@ func GetMaterialAttrList(c *gin.Context) {
 	//tmp, _ := json.Marshal(req)
 	//fmt.Println(string(tmp))
 
-	list, err := db.GetMaterialAttrList(req)
+	list, err := db.GetMaterialList(req)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `GetMaterialAttrList err`)
 		return
 	}
 
-	res := protocol.GetMaterialAttrListRes{}
+	res := protocol.GetMaterialListRes{}
 
 	res.Data.List = list
 	res.Data.TotalCount = len(list)
@@ -35,31 +35,8 @@ func GetMaterialAttrList(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func AddMaterialAttr(c *gin.Context) {
-	req := protocol.AddMaterialAttrReq{}
-
-	err := c.ShouldBind(&req)
-	if err != nil {
-		c.String(http.StatusBadRequest, `the body err`)
-		return
-	}
-
-	//fmt.Printf("%+v\n", req)
-
-	err = db.AddMaterialAttr(req)
-	if err != nil {
-		c.String(http.StatusInternalServerError, `AddMaterialAttr err`, err)
-		return
-	}
-
-	res := protocol.AddMaterialAttrRes{}
-	res.Code = 0
-
-	c.JSON(http.StatusOK, res)
-}
-
-func UpdateMaterialAttr(c *gin.Context) {
-	req := protocol.UpdateMaterialAttrReq{}
+func AddMaterial(c *gin.Context) {
+	req := protocol.AddMaterialReq{}
 
 	err := c.ShouldBind(&req)
 	if err != nil {
@@ -69,20 +46,20 @@ func UpdateMaterialAttr(c *gin.Context) {
 
 	fmt.Printf("%+v\n", req)
 
-	err = db.UpdatedMaterialAttr(req)
+	err = db.AddMaterial(req)
 	if err != nil {
-		c.String(http.StatusInternalServerError, `UpdateMaterialAttr err`, err)
+		c.String(http.StatusInternalServerError, `AddMaterial err`, err)
 		return
 	}
 
-	res := protocol.UpdateMaterialKindRes{}
+	res := protocol.AddMaterialRes{}
 	res.Code = 0
 
 	c.JSON(http.StatusOK, res)
 }
 
-func DeleteMaterialAttr(c *gin.Context) {
-	req := protocol.DeleteMaterialAttrReq{}
+func UpdateMaterial(c *gin.Context) {
+	req := protocol.UpdateMaterialReq{}
 
 	err := c.ShouldBind(&req)
 	if err != nil {
@@ -92,13 +69,36 @@ func DeleteMaterialAttr(c *gin.Context) {
 
 	fmt.Printf("%+v\n", req)
 
-	err = db.DeleteMaterialAttr(req)
+	err = db.UpdatedMaterial(req)
 	if err != nil {
-		c.String(http.StatusInternalServerError, `DeleteMaterialAttr err: `, err)
+		c.String(http.StatusInternalServerError, `UpdateMaterial err`, err)
 		return
 	}
 
-	res := protocol.DeleteMaterialAttrRes{}
+	res := protocol.UpdateMaterialRes{}
+	res.Code = 0
+
+	c.JSON(http.StatusOK, res)
+}
+
+func DeleteMaterial(c *gin.Context) {
+	req := protocol.DeleteMaterialReq{}
+
+	err := c.ShouldBind(&req)
+	if err != nil {
+		c.String(http.StatusBadRequest, `the body err`)
+		return
+	}
+
+	fmt.Printf("%+v\n", req)
+
+	err = db.DeleteMaterial(req)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `DeleteMaterial err: `, err)
+		return
+	}
+
+	res := protocol.DeleteMaterialRes{}
 	res.Code = 0
 
 	c.JSON(http.StatusOK, res)

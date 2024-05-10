@@ -8,6 +8,7 @@ import Admin from "~/layouts/admin.vue";
 import ProjectKind from "~/pages/Projectkind/list.vue"
 import MaterialKind from "~/pages/MaterialKind/list.vue"
 import MaterialAttr from "~/pages/MaterialAttr/list.vue"
+import Material from "~/pages/Material/list.vue"
 
 const routes = [
     {
@@ -27,10 +28,10 @@ const routes = [
                 path: "/material_attr/list",
                 component: MaterialAttr,
             },
-            // {
-            //     path: "/material/list",
-            //     component: HelloWorld,
-            // },
+            {
+                path: "/material/list",
+                component: Material,
+            },
         ]    
     }
 ]

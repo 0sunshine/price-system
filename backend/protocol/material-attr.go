@@ -2,16 +2,17 @@ package protocol
 
 type GetMaterialAttrListReqFilter struct {
 	CommonFilterBase `json:",inline"`
+	MaterialKindId   int64 `json:"material_kind_id" `
 }
 
 type GetMaterialAttrReq struct {
-	CommonRequestBase[GetMaterialKindListReqFilter] `json:",inline"`
+	CommonRequestBase[GetMaterialAttrListReqFilter] `json:",inline"`
 }
 
 type MaterialAttrItem struct {
 	AttrId         int64  `json:"attr_id" `
 	MaterialKindId int64  `json:"material_kind_id" `
-	MaterialName   string `json:"material_name" `
+	MaterialName   string `json:"material_name,omitempty" `
 	AttrDesc       string `json:"attr_desc" `
 }
 

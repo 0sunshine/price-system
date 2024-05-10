@@ -441,8 +441,10 @@ func GetMaterialAttrList(req protocol.GetMaterialAttrReq) ([]protocol.MaterialAt
 	conds := []string{}
 	condsValue := []any{}
 
-	//conds = append(conds, "parent_project_kind_id=?")
-	//condsValue = append(condsValue, parentProjectKindId)
+	if req.Filter.MaterialKindId != -1 {
+		conds = append(conds, "a.material_kind_id=?")
+		condsValue = append(condsValue, req.Filter.MaterialKindId)
+	}
 
 	strConds := appendAndCond(conds)
 	if len(strConds) > 0 {
@@ -522,6 +524,121 @@ func DeleteMaterialAttr(req protocol.DeleteMaterialAttrReq) error {
 
 		_, err = DB.Exec(
 			"delete from table_material_attr where attr_id=?", id)
+
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func GetMaterialList(req protocol.GetMaterialReq) ([]protocol.MaterialItem, error) {
+	list := []protocol.MaterialItem{}
+
+	strSql := "select a.*,b.material_name from table_material a join table_material_kind b on " +
+		" a.material_kind_id=b.material_kind_id "
+
+	conds := []string{}
+	condsValue := []any{}
+
+	if len(req.Filter.MaterialNameLike) != 0 {
+		conds = append(conds, "b.material_name like ?")
+		condsValue = append(condsValue, "%"+req.Filter.MaterialNameLike+"%")
+	}
+	//conds = append(conds, "parent_project_kind_id=?")
+	//condsValue = append(condsValue, parentProjectKindId)
+
+	strConds := appendAndCond(conds)
+	if len(strConds) > 0 {
+		strSql += " where "
+		strSql += strConds
+		strSql += ";"
+	}
+
+	fmt.Println(strSql)
+	rows, err := DB.Query(strSql, condsValue...)
+	if err != nil {
+		fmt.Println(err)
+		return list, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var item protocol.MaterialItem
+		err := rows.Scan(&item.MaterialId, &item.MaterialKindId,
+			&item.Price, &item.ExtraPrice, &item.MaterialName)
+		if err != nil {
+			fmt.Println(err)
+			return []protocol.MaterialItem{}, err
+		}
+
+		attr_filter := protocol.GetMaterialAttrReq{}
+		attr_filter.Filter.PageSize = 10000
+		attr_filter.Filter.CurrentPage = 1
+		attr_filter.Filter.MaterialKindId = item.MaterialKindId
+
+		item.AttrDescs, err = GetMaterialAttrList(attr_filter)
+		if err != nil {
+			fmt.Println(err)
+			return []protocol.MaterialItem{}, err
+		}
+
+		list = append(list, item)
+	}
+
+	return list, nil
+}
+
+func AddMaterial(req protocol.AddMaterialReq) error {
+
+	var err error
+
+	_, err = DB.Exec(
+		"insert into table_material(material_kind_id, price, extra_price) "+
+			"values (?,?,?)", req.MaterialKindId, req.Price, req.ExtraPrice)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func UpdatedMaterial(req protocol.UpdateMaterialReq) error {
+
+	var err error
+
+	_, err = DB.Exec(
+		"update table_material set price = ?,extra_price=? where material_id=?",
+		req.Price, req.ExtraPrice)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func DeleteMaterial(req protocol.DeleteMaterialReq) error {
+
+	var err error
+
+	tx, err := DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	for _, id := range req.MaterialIds {
+
+		_, err = DB.Exec(
+			"delete from table_material where material_id=?", id)
 
 		if err != nil {
 			fmt.Println(err)
