@@ -1,8 +1,9 @@
 package protocol
 
 type GetMaterialListReqFilter struct {
-	CommonFilterBase `json:",inline"`
-	MaterialNameLike string `json:"material_name_like" `
+	CommonFilterBase        `json:",inline"`
+	MaterialNameLike        string `json:"material_name_like" `
+	ParentProjectKindIdLike string `json:"parent_project_kind_id_like" `
 }
 
 type GetMaterialReq struct {

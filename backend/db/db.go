@@ -256,6 +256,29 @@ func getProjectKindID(parentProjectKindID string) (string, error) {
 	return "", nil
 }
 
+func getProjectKindIDPrefix(projectKindID string) string {
+
+	var prefix string = ""
+
+	for i := 0; i < len(projectKindID)/6; i++ {
+		mark := projectKindID[i*6 : (i+1)*6]
+		n, err := strconv.Atoi(mark)
+		if err != nil {
+			prefix = "bugggggggg"
+			fmt.Println(err)
+			break
+		}
+
+		if n == 0 {
+			break
+		}
+
+		prefix += mark
+	}
+
+	return prefix
+}
+
 func AddProjectKind(req protocol.AddProjectKindListReq) error {
 
 	var err error
@@ -546,6 +569,14 @@ func GetMaterialList(req protocol.GetMaterialReq) ([]protocol.MaterialItem, erro
 	if len(req.Filter.MaterialNameLike) != 0 {
 		conds = append(conds, "b.material_name like ?")
 		condsValue = append(condsValue, "%"+req.Filter.MaterialNameLike+"%")
+	}
+
+	if len(req.Filter.ParentProjectKindIdLike) != 0 {
+
+		prefix := getProjectKindIDPrefix(req.Filter.ParentProjectKindIdLike)
+
+		conds = append(conds, "b.project_kind_id like ?")
+		condsValue = append(condsValue, "%"+prefix+"%")
 	}
 	//conds = append(conds, "parent_project_kind_id=?")
 	//condsValue = append(condsValue, parentProjectKindId)
