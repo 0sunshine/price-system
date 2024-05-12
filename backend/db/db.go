@@ -614,7 +614,7 @@ func UpdatedMaterial(req protocol.UpdateMaterialReq) error {
 
 	_, err = DB.Exec(
 		"update table_material set price = ?,extra_price=? where material_id=?",
-		req.Price, req.ExtraPrice)
+		req.Price, req.ExtraPrice, req.MaterialId)
 
 	if err != nil {
 		fmt.Println(err)
