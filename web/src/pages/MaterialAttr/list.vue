@@ -24,8 +24,6 @@
         <el-table-column label="规格描述" prop="attr_desc" width="300" />
         <el-table-column label="操作" align="center">
           <template #default="scope">
-            <el-button text type="primary" size="small"
-              @click.stop="addChild(scope.row.material_kind_id)">增加</el-button>
             <el-button text type="primary" size="small" @click.stop="handleEditProxy(scope.row)">修改</el-button>
             <el-popconfirm title="是否要删除该材料规格？" confirmButtonText="确认" cancelButtonText="取消"
               @confirm="handleDelete([scope.row.attr_id])">
@@ -47,7 +45,7 @@
           <el-form-item label="所属材料" prop="material_kind_id">
             <el-cascader v-model="form.material_kind_id" :options="MaterialKindList"
               :props="{ value: 'material_kind_id', label: 'material_name', children: 'children', checkStrictly: true, emitPath: false }"
-              placeholder="空项目" :disabled=CascaderEnableRef />
+              placeholder="空材料类型" :disabled=CascaderEnableRef />
           </el-form-item>
           <el-form-item label="规格" prop="attr_desc">
             <el-input type="textarea" v-model="form.attr_desc" placeholder="规格描述"></el-input>
@@ -141,12 +139,6 @@ const {
   update: updateMaterialAttr,
   create: createMaterialAttr
 })
-
-// 添加子分类
-const addChild = (project_kind_id) => {
-  handleCreate()
-  form.project_kind_id = project_kind_id
-}
 
 const handleEditProxy = (row) => {
   handleEdit(row)

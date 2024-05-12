@@ -32,7 +32,20 @@
         <el-table-column type="selection" width="55" />
         <el-table-column label="材料名称" prop="material_name" width="300" />
         <el-table-column label="材料价格" prop="price" width="300" />
-        <el-table-column label="操作" prop="extra_price" width="300">
+        <el-table-column label="规格" width="300">
+          <template #default="scope">
+
+            <span>
+              <div v-for="item in scope.row.attr_descs">
+                <el-tag size="small">
+                  {{ item.attr_desc }}
+                </el-tag>
+              </div>
+            </span>
+
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center">
           <template #default="scope">
             <el-button text type="primary" size="small" @click.stop="handleEditProxy(scope.row)">修改</el-button>
             <el-popconfirm title="是否要删除该材料？" confirmButtonText="确认" cancelButtonText="取消"
@@ -55,7 +68,7 @@
           <el-form-item label="所属材料" prop="material_kind_id">
             <el-cascader v-model="form.material_kind_id" :options="MaterialKindList"
               :props="{ value: 'material_kind_id', label: 'material_name', children: 'children', checkStrictly: true, emitPath: false }"
-              placeholder="空项目" @change="handleMaterialKindIdChanged" :disabled=CascaderEnableRef />
+              placeholder="空材料类型" @change="handleMaterialKindIdChanged" :disabled=CascaderEnableRef />
           </el-form-item>
           <el-form-item label="规格" prop="attr_descs">
             <el-cascader v-model="MaterialAttrCascader" :options="MaterialKindAttrList"

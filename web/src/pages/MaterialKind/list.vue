@@ -25,8 +25,6 @@
         <el-table-column label="备注" prop="notes" width="300" />
         <el-table-column label="操作" align="center">
           <template #default="scope">
-            <el-button text type="primary" size="small"
-              @click.stop="addChild(scope.row.material_kind_id)">增加</el-button>
             <el-button text type="primary" size="small" @click.stop="handleEditProxy(scope.row)">修改</el-button>
             <el-popconfirm title="是否要删除该材料类型？" confirmButtonText="确认" cancelButtonText="取消"
               @confirm="handleDelete([scope.row.material_kind_id])">
@@ -152,11 +150,6 @@ const {
   create: createMaterialKind
 })
 
-// 添加子分类
-const addChild = (project_kind_id) => {
-  handleCreate()
-  form.project_kind_id = project_kind_id
-}
 
 const handleEditProxy = (row) => {
   handleEdit(row)
