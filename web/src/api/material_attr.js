@@ -22,8 +22,8 @@ export function updateMaterialAttr(data){
     return axios.post(`/admin/updateMaterialAttr`,data)
 }
 
-export function deleteMaterialAttr(material_attr_id){
+export function deleteMaterialAttr(attr_id){
     return axios.post(`/admin/deleteMaterialAttr`,{
-        material_attr_id
+        attr_id
     })
 }

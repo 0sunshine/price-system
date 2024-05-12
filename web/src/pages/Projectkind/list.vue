@@ -7,8 +7,12 @@
       <!-- 新增|刷新 -->
       <ListHeader layout="create,refresh" @create="handleCreate" @refresh="getData">
 
-        <el-button type="danger" size="small" @click="handleMultiDelete"
-          v-if="searchForm.tab != 'delete'">批量删除</el-button>
+        <el-popconfirm title="是否批量删除项目？" confirmButtonText="确认" cancelButtonText="取消" @confirm="handleMultiDelete">
+          <template #reference>
+            <el-button type="danger" size="small" v-if="searchForm.tab != 'delete'">批量删除</el-button>
+          </template>
+        </el-popconfirm>
+
       </ListHeader>
 
       <el-table ref="multipleTableRef" @selection-change="handleSelectionChange" :data="tableData" stripe
@@ -21,7 +25,7 @@
           <template #default="scope">
             <el-button text type="primary" size="small" @click.stop="addChild(scope.row.project_kind_id)">增加</el-button>
             <el-button text type="primary" size="small" @click.stop="handleEdit(scope.row)">修改</el-button>
-            <el-popconfirm title="是否要删除该材料？" confirmButtonText="确认" cancelButtonText="取消"
+            <el-popconfirm title="是否要删除该项目？" confirmButtonText="确认" cancelButtonText="取消"
               @confirm="handleDelete([scope.row.project_kind_id])">
               <template #reference>
                 <el-button class="px-1" text type="primary" size="small">删除</el-button>
@@ -41,7 +45,7 @@
           <el-form-item label="父项目" prop="parent_project_kind_id">
             <el-cascader v-model="form.parent_project_kind_id" :options="resList"
               :props="{ value: 'project_kind_id', label: 'project_name', children: 'children', checkStrictly: true, emitPath: false }"
-              placeholder="空项目" disabled/>
+              placeholder="空项目" disabled />
           </el-form-item>
           <el-form-item label="项目名称" prop="project_name">
             <el-input v-model="form.project_name" placeholder="请输入项目名称"></el-input>

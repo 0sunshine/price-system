@@ -9,17 +9,21 @@
         </SearchItem>
 
         <template #show>
-          <SearchItem label="搜索材料">
-            <el-input v-model="searchForm.material_name_like" placeholder="模糊查找材料名" clearable></el-input>
+          <SearchItem label="所属项目">
+            <el-cascader v-model="searchForm.parent_project_kind_id_like" :options="ProjectList"
+              :props="{ value: 'project_kind_id', label: 'project_name', children: 'children', checkStrictly: true, emitPath: false }"
+              placeholder="选择所属项目" />
           </SearchItem>
         </template>
       </Search>
 
       <!-- 新增|刷新 -->
       <ListHeader layout="create,refresh" @create="handleCreateProxy" @refresh="getData">
-
-        <el-button type="danger" size="small" @click="handleMultiDelete"
-          v-if="searchForm.tab != 'delete'">批量删除</el-button>
+        <el-popconfirm title="是否批量删除材料？" confirmButtonText="确认" cancelButtonText="取消" @confirm="handleMultiDelete">
+          <template #reference>
+            <el-button type="danger" size="small" v-if="searchForm.tab != 'delete'">批量删除</el-button>
+          </template>
+        </el-popconfirm>
       </ListHeader>
 
       <el-table ref="multipleTableRef" @selection-change="handleSelectionChange" :data="tableData" stripe
@@ -87,6 +91,10 @@ import {
 } from "~/api/material"
 
 import {
+  getProjectKindList
+} from "~/api/project_kind"
+
+import {
   getMaterialKindList
 } from "~/api/material_kind"
 
@@ -109,6 +117,8 @@ const CascaderEnableRef = ref(false)
 const MaterialKindAttrList = ref([])
 const MaterialAttrCascader = ref([])
 
+const ProjectList = ref([])
+
 const {
   handleSelectionChange,
   multipleTableRef,
@@ -128,9 +138,14 @@ const {
 } = useInitTable({
   searchForm: {
     material_name_like: "",
+    parent_project_kind_id_like:"",
   },
   getList: getMaterialList,
   onGetListSuccess: (res) => {
+
+    getProjectKindList(1, 10000).then((response) => {
+      ProjectList.value = response.list
+    });
 
     getMaterialKindList(1, 10000).then((response) => {
       MaterialKindList.value = response.list
@@ -141,7 +156,7 @@ const {
     total.value = res.totalCount
   },
   delete: deleteMaterial,
-  selectionChange: (e) => e.map(o => o.material_kind_id)
+  selectionChange: (e) => e.map(o => o.material_id)
 })
 
 const resList = ref([])

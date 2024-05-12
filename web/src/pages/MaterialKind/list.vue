@@ -7,8 +7,13 @@
       <!-- 新增|刷新 -->
       <ListHeader layout="create,refresh" @create="handleCreateProxy" @refresh="getData">
 
-        <el-button type="danger" size="small" @click="handleMultiDelete"
-          v-if="searchForm.tab != 'delete'">批量删除</el-button>
+        <el-popconfirm title="是否批量删除材料类型？" confirmButtonText="确认" cancelButtonText="取消" @confirm="handleMultiDelete">
+          <template #reference>
+            <el-button type="danger" size="small" 
+              v-if="searchForm.tab != 'delete'">批量删除</el-button>
+          </template>
+        </el-popconfirm>
+
       </ListHeader>
 
       <el-table ref="multipleTableRef" @selection-change="handleSelectionChange" :data="tableData" stripe
@@ -23,7 +28,7 @@
             <el-button text type="primary" size="small"
               @click.stop="addChild(scope.row.material_kind_id)">增加</el-button>
             <el-button text type="primary" size="small" @click.stop="handleEditProxy(scope.row)">修改</el-button>
-            <el-popconfirm title="是否要删除该材料？" confirmButtonText="确认" cancelButtonText="取消"
+            <el-popconfirm title="是否要删除该材料类型？" confirmButtonText="确认" cancelButtonText="取消"
               @confirm="handleDelete([scope.row.material_kind_id])">
               <template #reference>
                 <el-button class="px-1" text type="primary" size="small">删除</el-button>

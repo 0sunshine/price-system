@@ -6,13 +6,18 @@
       <!-- 新增|刷新 -->
       <ListHeader layout="create,refresh" @create="handleCreateProxy" @refresh="getData">
 
-        <el-button type="danger" size="small" @click="handleMultiDelete"
-          v-if="searchForm.tab != 'delete'">批量删除</el-button>
+        <el-popconfirm title="是否批量删除材料规格？" confirmButtonText="确认" cancelButtonText="取消" @confirm="handleMultiDelete">
+          <template #reference>
+            <el-button type="danger" size="small" v-if="searchForm.tab != 'delete'">批量删除</el-button>
+          </template>
+        </el-popconfirm>
+
+
 
       </ListHeader>
 
       <el-table ref="multipleTableRef" @selection-change="handleSelectionChange" :data="tableData" stripe
-        style="width: 100%" row-key="material_kind_id" v-loading="loading" default-expand-all
+        style="width: 100%" row-key="attr_id" v-loading="loading" default-expand-all
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }">
         <el-table-column type="selection" width="55" />
         <el-table-column label="所属材料" prop="material_name" width="300" />
@@ -22,8 +27,8 @@
             <el-button text type="primary" size="small"
               @click.stop="addChild(scope.row.material_kind_id)">增加</el-button>
             <el-button text type="primary" size="small" @click.stop="handleEditProxy(scope.row)">修改</el-button>
-            <el-popconfirm title="是否要删除该材料？" confirmButtonText="确认" cancelButtonText="取消"
-              @confirm="handleDelete([scope.row.material_kind_id])">
+            <el-popconfirm title="是否要删除该材料规格？" confirmButtonText="确认" cancelButtonText="取消"
+              @confirm="handleDelete([scope.row.attr_id])">
               <template #reference>
                 <el-button class="px-1" text type="primary" size="small">删除</el-button>
               </template>
@@ -112,7 +117,7 @@ const {
     total.value = res.totalCount
   },
   delete: deleteMaterialAttr,
-  selectionChange: (e) => e.map(o => o.material_kind_id)
+  selectionChange: (e) => e.map(o => o.attr_id)
 })
 
 const resList = ref([])
